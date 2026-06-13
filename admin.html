@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel — NetKeys</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+</head>
+<body class="bg-black text-white">
+    <nav class="border-b border-zinc-800 py-5 bg-black">
+        <div class="max-w-6xl mx-auto px-6 flex justify-between">
+            <a href="index.html" class="text-3xl font-bold">NETKEYS</a>
+            <button onclick="logout()" class="text-red-500">Logout</button>
+        </div>
+    </nav>
+
+    <div class="max-w-6xl mx-auto px-6 py-12">
+        <h1 class="text-5xl font-bold text-center mb-10">Admin Panel</h1>
+
+        <div id="loginPanel" class="max-w-md mx-auto bg-zinc-950 border border-zinc-800 rounded-3xl p-10">
+            <h2 class="text-3xl font-bold text-center mb-8">Admin Login</h2>
+            <input id="adminPass" type="password" placeholder="admin123" class="w-full bg-zinc-900 border border-zinc-800 rounded-2xl px-6 py-4 mb-6">
+            <button onclick="checkLogin()" class="w-full bg-red-600 py-6 rounded-2xl text-xl">ACCEDI</button>
+        </div>
+
+        <div id="mainPanel" class="hidden">
+            <div id="errorBox" class="hidden bg-red-900 border border-red-600 rounded-3xl p-6 mb-8">
+                <p id="errorText" class="text-red-100"></p>
+            </div>
+
+            <div class="bg-zinc-950 border border-zinc-800 rounded-3xl p-8 mb-8">
+                <h2 class="text-2xl font-bold mb-6">Cookie Checker</h2>
+                <textarea id="cookieInput" rows="6" placeholder="Incolla qui il cookie Netflix (JSON, header o .txt)" class="w-full bg-zinc-900 border border-zinc-800 rounded-2xl px-4 py-3 mb-4 font-mono text-sm"></textarea>
+                <button onclick="checkCookie()" class="w-full bg-emerald-700 hover:bg-emerald-600 py-4 rounded-2xl text-lg flex items-center justify-center gap-2 mb-6">
+                    <i class="fas fa-check-circle"></i> Verifica Cookie
+                </button>
+                <div id="checkResult" class="hidden p-4 rounded-2xl text-sm"></div>
+            </div>
+
+            <div class="bg-zinc-950 border border-zinc-800 rounded-3xl p-8 mb-8">
+                <h2 class="text-2xl font-bold mb-6">Carica Cookie (.txt)</h2>
+                <input type="file" id="bulkFiles" multiple accept=".txt" class="block w-full mb-4">
+                <button onclick="bulkUpload()" class="w-full bg-red-600 py-5 rounded-2xl text-lg flex items-center justify-center gap-2 mb-4">
+                    <i class="fas fa-upload"></i> Carica e Genera Chiavi
+                </button>
+                <button onclick="revalidateStock()" class="w-full bg-zinc-800 hover:bg-zinc-700 py-4 rounded-2xl text-lg flex items-center justify-center gap-2">
+                    <i class="fas fa-sync-alt"></i> Rivalida Stock Esistente
+                </button>
+                <div id="uploadStatus" class="hidden mt-4 p-4 bg-zinc-900 rounded-2xl text-sm">
+                    <p id="uploadText"></p>
+                </div>
+            </div>
+
+            <div class="bg-zinc-950 border border-zinc-800 rounded-3xl p-8">
+                <h2 class="text-2xl font-bold mb-6">Stock Attuale (<span id="count">0</span>)</h2>
+                <div id="stockList" class="space-y-4"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let adminToken = '';
+
+        function showError(message) {
+            const box = document.getElementById('errorBox');
+            document.getElementById('errorText').textContent = message;
+            box.classList.remove('hidden');
+            console.error('❌ ERROR:', message);
+        }
+
+        function hideError() {
+            document.getElementById('errorBox').classList.add('hidden');
+        }
+
+        function showUploadStatus(message) {
+            const box = document.getElementById('uploadStatus');
+            document.getElementById('uploadText').innerHTML = message;
+            box.classList.remove('hidden');
+        }
+
+        function hideUploadStatus() {
+            document.getElementById('uploadStatus').classList.add('hidden');
+        }
+
+        async function checkLogin() {
+            hideError();
+            const password = document.getElementById('adminPass').value;
+            
+            if (!password) {
+                showError('Inserisci la password');
+                return;
+            }
+
+            try {
+                console.log('🔐 Trying admin login...');
+                const res = await fetch('/api/admin/login', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({password})
+                });
+                
+                if (!res.ok) {
+                    showError(`Login failed: ${res.status} ${res.statusText}`);
+                    return;
+                }
+                
+                const data = await res.json();
+                
+                if (data.success) {
+                    adminToken = data.token;
+                    localStorage.setItem('adminToken', adminToken);
+                    console.log('✅ Login successful, token:', adminToken.substring(0, 10) + '...');
+                    
+                    document.getElementById('loginPanel').classList.add('hidden');
+                    document.getElementById('mainPanel').classList.remove('hidden');
+                    loadStock();
+                } else {
+                    showError(data.error || 'Password errata!');
+                }
+            } catch (e) {
+                console.error('Connection error:', e);
+                showError('Errore di connessione: ' + e.message);
+            }
+        }
+
+        async function bulkUpload() {
+            hideError();
+            hideUploadStatus();
+            
+            const files = document.getElementById('bulkFiles').files;
+            if (files.length === 0) {
+                showError('Seleziona almeno un file');
+                return;
+            }
+
+            console.log(`📁 Uploading ${files.length} files...`);
+            showUploadStatus('⏳ Caricamento in corso...');
+
+            const formData = new FormData();
+            for (let file of files) {
+                formData.append('files', file);
+                console.log(`📄 Adding file: ${file.name} (${file.size} bytes)`);
+            }
+
+            try {
+                console.log('🚀 Sending to /api/stock/upload with token:', adminToken.substring(0, 10) + '...');
+                
+                const res = await fetch('/api/stock/upload', {
+                    method: 'POST',
+                    headers: {'Authorization': `Bearer ${adminToken}`},
+                    body: formData
+                });
+
+                console.log('📨 Response status:', res.status);
+                
+                if (!res.ok) {
+                    const errorText = await res.text();
+                    console.error('❌ Upload failed:', res.status, errorText);
+                    showError(`Upload failed: ${res.status} - ${errorText}`);
+                    return;
+                }
+
+                const data = await res.json();
+                console.log('✅ Upload response:', data);
+
+                if (data.success || data.added > 0) {
+                    const message = data.message || `✅ Aggiunti ${data.added} cookie!`;
+                    showUploadStatus(message + (data.errors && data.errors.length ? '<br><br>Errori:<br>' + data.errors.join('<br>') : ''));
+                    document.getElementById('bulkFiles').value = '';
+                    await new Promise(r => setTimeout(r, 1000));
+                    loadStock();
+                } else {
+                    showError(data.error || 'Nessun cookie aggiunto');
+                    if (data.errors && data.errors.length) {
+                        showUploadStatus('Errori:<br>' + data.errors.join('<br>'));
+                    }
+                }
+            } catch (e) {
+                console.error('Upload exception:', e);
+                showError('Errore upload: ' + e.message);
+            }
+        }
+
+        async function checkCookie() {
+            hideError();
+            const cookie = document.getElementById('cookieInput').value.trim();
+            const box = document.getElementById('checkResult');
+
+            if (!cookie) {
+                showError('Incolla un cookie da verificare');
+                return;
+            }
+
+            box.className = 'p-4 rounded-2xl text-sm bg-zinc-900';
+            box.textContent = 'Verifica in corso...';
+            box.classList.remove('hidden');
+
+            try {
+                const res = await fetch('/api/cookie/check', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${adminToken}`
+                    },
+                    body: JSON.stringify({cookie})
+                });
+                const data = await res.json();
+
+                if (data.valid) {
+                    box.className = 'p-4 rounded-2xl text-sm bg-emerald-950 border border-emerald-700 text-emerald-100';
+                    box.innerHTML = `
+                        <strong>Valido</strong><br>
+                        ${data.message}<br>
+                        Token: ${(data.nftoken || 'N/A').substring(0, 30)}...<br>
+                        Cookie trovati: ${(data.cookie_names || []).join(', ') || 'raw'}
+                    `;
+                } else {
+                    box.className = 'p-4 rounded-2xl text-sm bg-red-950 border border-red-700 text-red-100';
+                    box.textContent = data.message || data.error || 'Cookie non valido';
+                }
+            } catch (e) {
+                box.className = 'p-4 rounded-2xl text-sm bg-red-950 border border-red-700 text-red-100';
+                box.textContent = 'Errore verifica: ' + e.message;
+            }
+        }
+
+        async function revalidateStock() {
+            hideError();
+            hideUploadStatus();
+            showUploadStatus('Rivalidazione in corso...');
+
+            try {
+                const res = await fetch('/api/stock/revalidate', {
+                    method: 'POST',
+                    headers: {'Authorization': `Bearer ${adminToken}`}
+                });
+                const data = await res.json();
+
+                if (data.success) {
+                    showUploadStatus(data.message || 'Rivalidazione completata');
+                    await loadStock();
+                } else {
+                    showError(data.error || 'Rivalidazione fallita');
+                }
+            } catch (e) {
+                showError('Errore rivalidazione: ' + e.message);
+            }
+        }
+
+        async function loadStock() {
+            hideError();
+            
+            if (!adminToken) {
+                showError('Token non valido. Effettuare nuovamente il login.');
+                return;
+            }
+
+            try {
+                console.log('📊 Loading stock with token:', adminToken.substring(0, 10) + '...');
+                
+                const res = await fetch('/api/stock', {
+                    headers: {'Authorization': `Bearer ${adminToken}`}
+                });
+
+                console.log('📨 Stock response status:', res.status);
+
+                if (!res.ok) {
+                    const errorText = await res.text();
+                    console.error('❌ Load failed:', res.status, errorText);
+                    showError(`Stock load failed: ${res.status} - ${errorText}`);
+                    return;
+                }
+
+                const stock = await res.json();
+                console.log(`✅ Loaded ${stock.length} items from stock`);
+                
+                document.getElementById('count').textContent = stock.length;
+
+                if (!Array.isArray(stock)) {
+                    showError('Stock data is invalid');
+                    return;
+                }
+
+                const html = stock.map(item => `
+                    <div class="bg-zinc-900 p-6 rounded-2xl">
+                        <div class="font-mono text-red-500 text-sm">${item.key || 'N/A'}</div>
+                        <div class="text-sm text-zinc-400 mt-2">Token: ${(item.nftoken || 'N/A').substring(0, 20)}...</div>
+                        <div class="text-xs text-zinc-500 mt-1">Status: ${item.status || 'Unknown'}</div>
+                        <div class="text-xs text-zinc-600 mt-1">Added: ${item.added || 'N/A'}</div>
+                    </div>
+                `).join('');
+                
+                document.getElementById('stockList').innerHTML = html || "<p class='text-center py-12 text-zinc-500'>Stock vuoto</p>";
+            } catch (e) {
+                console.error('Load stock exception:', e);
+                showError('Errore caricamento stock: ' + e.message);
+            }
+        }
+
+        function logout() {
+            console.log('🚪 Logging out...');
+            localStorage.removeItem('adminToken');
+            location.reload();
+        }
+
+        window.addEventListener('load', () => {
+            adminToken = localStorage.getItem('adminToken') || '';
+            if (adminToken) {
+                console.log('✅ Token found in localStorage');
+                document.getElementById('loginPanel').classList.add('hidden');
+                document.getElementById('mainPanel').classList.remove('hidden');
+                loadStock();
+            } else {
+                console.log('ℹ️ No token found, showing login');
+            }
+        });
+    </script>
+</body>
+</html>

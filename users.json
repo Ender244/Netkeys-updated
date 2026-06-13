@@ -1,0 +1,23 @@
+{
+  "test@example.com": {
+    "created_at": "2026-06-13T10:14:02.525988",
+    "keys_used": 0,
+    "keys": []
+  },
+  "erikmarino06@gmail.com": {
+    "created_at": "2026-06-13T10:21:28.132516",
+    "keys_used": 2,
+    "keys": [
+      {
+        "key": "NET-BVI6-050N-TU14",
+        "nftoken": "nftoken_f42c59a720009ec7462ab6add5c6f8942cc38ebf",
+        "date": "2026-06-13T10:21:32.196055"
+      },
+      {
+        "key": "NET-3G21-K8ZF-O14D",
+        "nftoken": "nftoken_949f880d5e305d2291e39fd5430b8f49395f3712",
+        "date": "2026-06-13T10:22:08.441348"
+      }
+    ]
+  }
+}

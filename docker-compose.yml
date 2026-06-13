@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  netkeys:
+    build: .
+    container_name: netkeys-app
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_ENV=production
+      - ADMIN_PASSWORD=your_secure_password_here
+    volumes:
+      - ./data:/app/data
+    restart: unless-stopped

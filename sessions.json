@@ -1,0 +1,27 @@
+{
+  "3ko1EaqFKlfLMlPCYd80QT_GWjHrjahxqfcYTGkRFPQ": {
+    "email": "admin",
+    "role": "admin",
+    "created_at": "2026-06-13T10:04:57.345390"
+  },
+  "QgdwrhJ9_a8gGTy8CAwGHRY0SZUG8-iKAbPY6Evlj6w": {
+    "email": "test@example.com",
+    "created_at": "2026-06-13T10:14:02.526632",
+    "last_activity": "2026-06-13T10:14:02.526635"
+  },
+  "tde1BogpEAwCOZ1m83xA4mmgL9TM-U3B4KNIYeZRJpI": {
+    "email": "erikmarino06@gmail.com",
+    "created_at": "2026-06-13T10:21:28.133454",
+    "last_activity": "2026-06-13T10:21:28.133458"
+  },
+  "IpHgt9oxqFR2SiGiVPl9SlVHDFZzc82uRwHwch8Jek0": {
+    "email": "erikmarino06@gmail.com",
+    "created_at": "2026-06-13T10:22:13.936315",
+    "last_activity": "2026-06-13T10:22:13.936320"
+  },
+  "vQpPO6uFO8JLd4Uu7mqHI2_gJC9aZ8MUfPxbLUJ7s0A": {
+    "email": "erikmarino06@gmail.com",
+    "created_at": "2026-06-13T10:22:34.787014",
+    "last_activity": "2026-06-13T10:22:34.787019"
+  }
+}

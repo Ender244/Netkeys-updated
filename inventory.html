@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Inventory — NetKeys</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-black text-white">
+    <nav class="border-b border-zinc-800 py-5">
+        <div class="max-w-6xl mx-auto px-6 flex justify-between">
+            <a href="index.html" class="text-3xl font-bold">NETKEYS</a>
+            <button onclick="logout()" class="text-red-500">Logout</button>
+        </div>
+    </nav>
+    <div class="max-w-4xl mx-auto px-6 py-16">
+        <h1 class="text-5xl font-bold mb-12">My Inventory</h1>
+        <div id="stats" class="grid grid-cols-2 gap-4 mb-12">
+            <div class="bg-zinc-950 border border-zinc-800 p-6 rounded-2xl">
+                <p class="text-zinc-400 text-sm">KEYS USED</p>
+                <p id="keysUsed" class="text-3xl font-bold text-red-500">0</p>
+            </div>
+            <div class="bg-zinc-950 border border-zinc-800 p-6 rounded-2xl">
+                <p class="text-zinc-400 text-sm">MEMBER SINCE</p>
+                <p id="memberSince" class="text-sm font-mono">-</p>
+            </div>
+        </div>
+        <div id="list" class="space-y-6"></div>
+    </div>
+    <script>
+        const userToken = localStorage.getItem('userToken');
+        const userEmail = localStorage.getItem('userEmail');
+        
+        if (!userToken) window.location.href = 'login.html';
+
+        async function loadInventory() {
+            try {
+                const res = await fetch('/api/inventory', {
+                    headers: {'Authorization': `Bearer ${userToken}`}
+                });
+                const data = await res.json();
+
+                document.getElementById('keysUsed').textContent = data.keys_used;
+                
+                const date = new Date(data.created_at).toLocaleDateString('it-IT');
+                document.getElementById('memberSince').textContent = date;
+
+                const html = data.keys.map(key => `
+                    <div class="bg-zinc-950 border border-zinc-800 p-6 rounded-2xl">
+                        <div class="font-mono text-red-500 mb-2">${key.key}</div>
+                        <div class="text-sm text-zinc-400 mb-2">Token: ${(key.nftoken || 'N/A').substring(0, 20)}...</div>
+                        <div class="text-xs text-zinc-500">${new Date(key.date).toLocaleString('it-IT')}</div>
+                    </div>
+                `).join('');
+                
+                document.getElementById('list').innerHTML = html || "<p class='text-center py-12 text-zinc-500'>Nessuna chiave ancora utilizzata</p>";
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('userToken');
+            localStorage.removeItem('userEmail');
+            window.location.href = 'login.html';
+        }
+
+        loadInventory();
+    </script>
+</body>
+</html>

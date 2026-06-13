@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login — NetKeys</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>:root{--netflix-red:#E50914}</style>
+</head>
+<body class="bg-black text-white">
+    <nav class="border-b border-zinc-800 py-5">
+        <div class="max-w-6xl mx-auto px-6"><a href="index.html" class="text-3xl font-bold">NETKEYS</a></div>
+    </nav>
+    <div class="max-w-md mx-auto px-6 py-24">
+        <div class="bg-zinc-950 border border-zinc-800 rounded-3xl p-10">
+            <h1 class="text-4xl font-bold text-center mb-8">Accedi al tuo Account</h1>
+            <input id="email" placeholder="Email" class="w-full bg-zinc-900 border border-zinc-800 rounded-2xl px-6 py-4 mb-6">
+            <button onclick="login()" class="w-full bg-red-600 py-6 rounded-2xl text-xl font-semibold">ACCEDI</button>
+        </div>
+    </div>
+    <script>
+        function login() {
+            const email = document.getElementById('email').value.trim();
+            if (!email) return alert("Inserisci email");
+            fetch('/api/login', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({email})
+            }).then(res => res.json())
+              .then(data => {
+                  if (data.success) {
+                      localStorage.setItem('userToken', data.token);
+                      localStorage.setItem('userEmail', data.email);
+                      window.location.href = 'inventory.html';
+                  } else {
+                      alert(data.error || "Errore login");
+                  }
+              });
+        }
+    </script>
+</body>
+</html>

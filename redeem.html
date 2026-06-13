@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Redeem Key — NetKeys</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+    <style>
+        :root { --netflix-red: #E50914; }
+        .btn-red { background-color: var(--netflix-red); }
+        .device-btn.active { border-color: #E50914; background-color: rgba(229,9,20,0.15); }
+    </style>
+</head>
+<body class="bg-black text-white min-h-screen">
+    <nav class="border-b border-zinc-800 py-5">
+        <div class="max-w-6xl mx-auto px-6 flex justify-between">
+            <a href="index.html" class="text-3xl font-bold">NETKEYS</a>
+        </div>
+    </nav>
+
+    <div class="max-w-2xl mx-auto px-6 py-16">
+        <h1 class="text-5xl font-bold text-center mb-12">REDEEM YOUR KEY</h1>
+
+        <div id="form" class="bg-zinc-950 border border-zinc-800 rounded-3xl p-10">
+            <input type="text" id="keyInput" placeholder="ENTER YOUR ACTIVATION KEY" 
+                   class="w-full bg-black border border-zinc-800 rounded-2xl px-8 py-6 text-center text-lg">
+            <button onclick="redeemKey()" class="mt-8 w-full btn-red py-6 rounded-2xl text-xl font-semibold">REDEEM KEY</button>
+        </div>
+
+        <div id="loading" class="hidden bg-zinc-950 border border-zinc-800 rounded-3xl p-12 text-center">
+            <i class="fas fa-spinner fa-spin text-6xl text-red-500 mb-6"></i>
+            <h2 class="text-2xl font-bold mb-3" id="loadingTitle">Verifica in corso...</h2>
+            <p id="loadingText" class="text-zinc-400">Controllo validità cookie</p>
+        </div>
+
+        <div id="result" class="hidden"></div>
+    </div>
+
+    <script>
+        let currentNftoken = "";
+        const userToken = localStorage.getItem('userToken');
+
+        async function redeemKey() {
+            if (!userToken) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            const key = document.getElementById('keyInput').value.trim().toUpperCase();
+            if (!key) {
+                alert("Inserisci la chiave di attivazione");
+                return;
+            }
+
+            showLoading("Verifica Account", "Controllo validita del cookie...");
+
+            try {
+                const res = await fetch('/api/stock/use', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${userToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({key})
+                });
+                const data = await res.json();
+
+                if (!data.success) {
+                    alert(data.error || "Stock esaurito");
+                    resetUI();
+                    return;
+                }
+
+                currentNftoken = data.nftoken;
+                showExtractedProfile();
+            } catch (e) {
+                alert("Errore di connessione");
+                resetUI();
+            }
+        }
+
+        function showLoading(title, text) {
+            document.getElementById('form').classList.add('hidden');
+            const loading = document.getElementById('loading');
+            loading.classList.remove('hidden');
+            document.getElementById('loadingTitle').textContent = title;
+            document.getElementById('loadingText').textContent = text;
+        }
+
+        function resetUI() {
+            document.getElementById('loading').classList.add('hidden');
+            document.getElementById('form').classList.remove('hidden');
+        }
+
+        function showExtractedProfile() {
+            document.getElementById('loading').classList.add('hidden');
+            const result = document.getElementById('result');
+            result.classList.remove('hidden');
+
+            result.innerHTML = `
+                <div class="bg-zinc-950 border border-emerald-500/30 rounded-3xl p-8">
+                    <div class="flex items-center gap-3 mb-6">
+                        <div class="w-8 h-8 bg-emerald-500 rounded-full flex items-center justify-center text-black font-bold">✓</div>
+                        <h2 class="text-2xl font-bold">PROFILE EXTRACTED</h2>
+                    </div>
+
+                    <div class="space-y-4 mb-10">
+                        <div class="flex justify-between bg-black p-4 rounded-2xl"><span class="text-zinc-400">TIER</span><span class="text-emerald-400">Premium</span></div>
+                        <div class="flex justify-between bg-black p-4 rounded-2xl"><span class="text-zinc-400">MAX PROFILES</span><span>5</span></div>
+                    </div>
+
+                    <div class="mb-8">
+                        <p class="text-sm text-zinc-400 mb-4">SELECT DEVICE</p>
+                        <div class="grid grid-cols-3 gap-4">
+                            <button onclick="selectDevice(this, 'pc')" class="device-btn active border-2 border-red-600 p-6 rounded-2xl text-center"><i class="fas fa-desktop text-3xl"></i><br>PC</button>
+                            <button onclick="selectDevice(this, 'phone')" class="device-btn border border-zinc-700 p-6 rounded-2xl text-center"><i class="fas fa-mobile-alt text-3xl"></i><br>Phone</button>
+                            <button onclick="selectDevice(this, 'tv')" class="device-btn border border-zinc-700 p-6 rounded-2xl text-center"><i class="fas fa-tv text-3xl"></i><br>TV</button>
+                        </div>
+                    </div>
+
+                    <div class="mb-8">
+                        <p class="text-sm text-zinc-400 mb-3">Activation URL</p>
+                        <div class="flex gap-3 bg-black p-3 rounded-2xl">
+                            <input id="urlInput" value="https://www.netflix.com/browse?nftoken=${currentNftoken}" class="flex-1 bg-transparent outline-none font-mono text-sm">
+                            <button onclick="copyUrl()" class="bg-zinc-800 px-6 rounded-xl">Copy</button>
+                            <button onclick="openUrl()" class="btn-red px-6 rounded-xl">Open</button>
+                        </div>
+                    </div>
+
+                    <button onclick="autoReplace()" class="w-full bg-amber-600 hover:bg-amber-500 py-5 rounded-2xl font-semibold flex items-center justify-center gap-2">
+                        <i class="fas fa-sync-alt"></i> Auto-Replace (Renew)
+                    </button>
+                </div>
+            `;
+        }
+
+        function selectDevice(btn, type) {
+            document.querySelectorAll('.device-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+
+            let base = "https://www.netflix.com/";
+            if (type === 'phone') base += "unsupported?";
+            else if (type === 'tv') base += "tv8?";
+            else base += "browse?";
+            document.getElementById('urlInput').value = base + "nftoken=" + currentNftoken;
+        }
+
+        async function autoReplace() {
+            showLoading("Auto-Renew", "Verifica se l'account è ancora attivo...");
+
+            try {
+                const res = await fetch('/api/auto-renew', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${userToken}`
+                    },
+                    body: JSON.stringify({nftoken: currentNftoken})
+                });
+                const data = await res.json();
+
+                if (data.success) {
+                    currentNftoken = data.nftoken;
+                    alert("✅ " + data.message);
+                    showExtractedProfile();
+                } else {
+                    alert("❌ " + data.error);
+                }
+            } catch (e) {
+                alert("Errore durante Auto-Renew");
+            }
+        }
+
+        function copyUrl() {
+            navigator.clipboard.writeText(document.getElementById('urlInput').value);
+            alert("✅ URL copiato!");
+        }
+        function openUrl() {
+            window.open(document.getElementById('urlInput').value, '_blank');
+        }
+    </script>
+</body>
+</html>

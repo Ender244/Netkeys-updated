@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NetKeys — Instant Netflix Account Activation</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+    <style>
+        :root { --netflix-red: #E50914; }
+        body { font-family: system-ui, -apple-system, sans-serif; }
+        .hero { background: linear-gradient(135deg, #000000 0%, #1a1a1a 100%); }
+        .btn-red { background-color: var(--netflix-red); }
+        .btn-red:hover { background-color: #f40612; }
+    </style>
+</head>
+<body class="bg-black text-white">
+
+    <nav class="border-b border-zinc-800 bg-black py-5 sticky top-0 z-50">
+        <div class="max-w-6xl mx-auto px-6 flex items-center justify-between">
+            <a href="index.html" class="text-4xl font-bold tracking-tighter">NETKEYS</a>
+            <div class="flex items-center gap-8 text-sm font-medium">
+                <a href="redeem.html" class="hover:text-red-500 transition">Redeem</a>
+                <a href="support.html" class="hover:text-red-500 transition">Support</a>
+                <a href="guidelines.html" class="hover:text-red-500 transition">Guidelines</a>
+                <a href="login.html" class="hover:text-red-500 transition">Login</a>
+            </div>
+        </div>
+    </nav>
+
+    <section class="hero py-32 text-center">
+        <div class="max-w-4xl mx-auto px-6">
+            <div class="inline-flex items-center gap-2 bg-zinc-900 text-red-500 px-6 py-2.5 rounded-full text-sm mb-8">
+                <i class="fas fa-bolt"></i> Instant Activation
+            </div>
+            <h1 class="text-6xl md:text-7xl font-bold tracking-tighter leading-none mb-8">
+                Your Key.<br>Your Netflix.
+            </h1>
+            <p class="text-xl text-zinc-400 max-w-2xl mx-auto">
+                Paste your activation key.<br>
+                Get a Netflix Premium profile in seconds.
+            </p>
+            <div class="mt-12">
+                <a href="redeem.html" class="inline-flex items-center gap-3 btn-red text-white font-semibold px-12 py-6 rounded-2xl text-2xl hover:scale-105 transition-all">
+                    <i class="fas fa-key"></i> REDEEM KEY →
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <section class="py-20 bg-zinc-950">
+        <div class="max-w-6xl mx-auto px-6">
+            <h2 class="text-4xl font-bold text-center mb-16">How It Works</h2>
+            <div class="grid md:grid-cols-3 gap-8">
+                <div class="bg-black border border-zinc-800 rounded-2xl p-8 text-center">
+                    <div class="text-5xl text-red-500 mb-4"><i class="fas fa-1"></i></div>
+                    <h3 class="text-xl font-bold mb-3">Login with Email</h3>
+                    <p class="text-zinc-400">Enter your email to create or access your account</p>
+                </div>
+                <div class="bg-black border border-zinc-800 rounded-2xl p-8 text-center">
+                    <div class="text-5xl text-red-500 mb-4"><i class="fas fa-2"></i></div>
+                    <h3 class="text-xl font-bold mb-3">Get Your Key</h3>
+                    <p class="text-zinc-400">Click redeem to receive a Netflix activation key</p>
+                </div>
+                <div class="bg-black border border-zinc-800 rounded-2xl p-8 text-center">
+                    <div class="text-5xl text-red-500 mb-4"><i class="fas fa-3"></i></div>
+                    <h3 class="text-xl font-bold mb-3">Activate Account</h3>
+                    <p class="text-zinc-400">Use the key to activate your Netflix Premium account</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="py-20">
+        <div class="max-w-6xl mx-auto px-6">
+            <h2 class="text-4xl font-bold text-center mb-16">Features</h2>
+            <div class="grid md:grid-cols-2 gap-8">
+                <div class="flex gap-4">
+                    <div class="text-3xl text-red-500 flex-shrink-0"><i class="fas fa-check-circle"></i></div>
+                    <div>
+                        <h3 class="font-bold mb-2">Instant Activation</h3>
+                        <p class="text-zinc-400">No waiting - get your key immediately</p>
+                    </div>
+                </div>
+                <div class="flex gap-4">
+                    <div class="text-3xl text-red-500 flex-shrink-0"><i class="fas fa-check-circle"></i></div>
+                    <div>
+                        <h3 class="font-bold mb-2">Premium Access</h3>
+                        <p class="text-zinc-400">Full Netflix Premium with all features</p>
+                    </div>
+                </div>
+                <div class="flex gap-4">
+                    <div class="text-3xl text-red-500 flex-shrink-0"><i class="fas fa-check-circle"></i></div>
+                    <div>
+                        <h3 class="font-bold mb-2">Multi-Device</h3>
+                        <p class="text-zinc-400">Works on PC, Mobile, TV and more</p>
+                    </div>
+                </div>
+                <div class="flex gap-4">
+                    <div class="text-3xl text-red-500 flex-shrink-0"><i class="fas fa-check-circle"></i></div>
+                    <div>
+                        <h3 class="font-bold mb-2">Auto-Renewal</h3>
+                        <p class="text-zinc-400">Automatically renew your key</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="py-20 bg-zinc-950 text-center">
+        <div class="max-w-3xl mx-auto px-6">
+            <h2 class="text-4xl font-bold mb-6">Ready to Start?</h2>
+            <p class="text-xl text-zinc-400 mb-10">Get your Netflix key now and start watching immediately</p>
+            <a href="redeem.html" class="inline-flex items-center gap-3 btn-red text-white font-semibold px-12 py-6 rounded-2xl text-xl hover:scale-105 transition-all">
+                <i class="fas fa-play"></i> START NOW
+            </a>
+        </div>
+    </section>
+
+    <footer class="bg-black py-12 text-center text-zinc-500 border-t border-zinc-800">
+        <p>NetKeys — Instant Netflix Activation</p>
+        <p class="text-sm mt-2">For educational purposes only</p>
+    </footer>
+</body>
+</html>
